@@ -10,26 +10,6 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
-class UserBase(BaseModel):
-    username: str
-
-
-class UserInDB(UserBase):
-    hashed_password: str
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserUpdate(UserBase):
-    pass
-
-
-class User(UserBase):
-    id: int
-
-
 class GenreBase(BaseModel):
     title: str
 
@@ -83,3 +63,33 @@ class CompleteGame(BaseModel):
 
 class CompleteGameOut(CompleteGame):
     games: list[Game]
+
+
+class UserBase(BaseModel):
+    username: str
+
+
+class UserInDB(UserBase):
+    hashed_password: str
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserUpdate(UserBase):
+    pass
+
+
+class User(UserBase):
+    id: int | None
+
+    class Config:
+        orm_mode: True
+
+class UserOut(UserBase):
+    id: int
+    blacklog: BacklogOut | None
+    complete_game: CompleteGameOut | None
+    games: list[Game, None] | None
+    genres: list[Genre, None] | None

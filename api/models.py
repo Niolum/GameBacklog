@@ -1,7 +1,11 @@
-from sqlalchemy import Integer, Column, ForeignKey, String, Date, Table
-from sqlalchemy.orm import relationship
+from datetime import date
 
-from api.database import Base
+from sqlalchemy import Column, ForeignKey, Table
+from sqlalchemy.orm import relationship, Mapped, mapped_column, MappedAsDataclass, DeclarativeBase
+
+
+class Base(MappedAsDataclass, DeclarativeBase):
+    pass
 
 
 game_genre = Table("game_genre", Base.metadata,
@@ -22,54 +26,58 @@ completegame_game = Table("completegame_game", Base.metadata,
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, nullable=False, unique=True, index=True)
-    hashed_password = Column(String)
-    backlog = relationship("Backlog", uselist=False, backref="users")
-    complete_game = relationship("CompleteGame", uselist=False, backref="users")
-    games = relationship("Game", back_populates="user")
-    genres = relationship("Genre", back_populates="user")
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
+    username: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column()
+    backlog: Mapped["Backlog"] = relationship(back_populates="user", lazy="selectin")
+    complete_game: Mapped["CompleteGame"] = relationship(back_populates="user", lazy="selectin")
+    games: Mapped[list["Game"] | None] = relationship(lazy="selectin")
+    genres: Mapped[list["Genre"] | None] = relationship(lazy="selectin")
+
+    def __init__(self, username, hashed_password):
+        self.username = username
+        self.hashed_password = hashed_password
 
 
 class Backlog(Base):
     __tablename__ = "backlogs"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    games = relationship("Game", secondary=backlog_game, back_populates="backlogs")
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="backlog")
+    games: Mapped[list["Game"]] = relationship(secondary=backlog_game)
 
 
 class CompleteGame(Base):
     __tablename__ = "completegames"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    games = relationship("Game", secondary=completegame_game, back_populates="games")
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="complete_game")
+    games: Mapped[list["Game"]] = relationship(secondary=completegame_game)
 
 
 class Game(Base):
     __tablename__ = "games"
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False, unique=True, index=True)
-    developer = Column(String, nullable=False)
-    publisher = Column(String, nullable=False)
-    date_release = Column(Date, nullable=False)
-    image = Column(String, nullable=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    genres = relationship("Genre", secondary=game_genre, back_populates="games")
-    backlogs = relationship("Backlog", secondary=backlog_game, back_populates="games")
-    complete_games = relationship("CompleteGame", secondary=completegame_game, back_populates="games")
-
-    user = relationship("User", back_populates="recipes")
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
+    developer: Mapped[str] = mapped_column(nullable=False)
+    publisher: Mapped[str] = mapped_column(nullable=False)
+    date_release: Mapped[date] = mapped_column(nullable=False)
+    image: Mapped[str] = mapped_column(nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="games")
+    genres: Mapped[list["Genre"]] = relationship(secondary=game_genre, back_populates="games")
+    backlogs: Mapped[list["Backlog"] | None] = relationship(secondary=backlog_game, back_populates="games")
+    complete_games: Mapped[list["CompleteGame"] | None] = relationship(secondary=completegame_game, back_populates="games")
 
 
 class Genre(Base):
     __tablename__ = "genres"
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False, unique=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    games = relationship("Game", secondary=game_genre, back_populates="genres")
-
-    user = relationship("User", back_populates="genres")
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(nullable=False, unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="genres")
+    games: Mapped[list["Game"] | None] = relationship(secondary=game_genre, back_populates="genres")
