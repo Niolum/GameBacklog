@@ -11,6 +11,7 @@ class TokenData(BaseModel):
 
 
 class GenreBase(BaseModel):
+    user_id: int
     title: str
 
 

@@ -18,7 +18,7 @@ async def get_user_by_name(db: AsyncSession, username: str):
         .options(selectinload(User.backlog).selectinload(Backlog.games))
         .options(selectinload(User.complete_game).selectinload(CompleteGame.games))
         .options(joinedload(User.games))
-        .options(joinedload(User.genres))
+        .options(selectinload(User.genres).selectinload(Genre.games))
     )
     return result.scalars().first()
 
@@ -42,10 +42,10 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
         .order_by(User.id)
         .offset(skip)
         .limit(limit)
-        .options(selectinload(User.backlog))
-        .options(selectinload(User.complete_game))
+        .options(selectinload(User.backlog).selectinload(Backlog.games))
+        .options(selectinload(User.complete_game).selectinload(CompleteGame.games))
         .options(selectinload(User.games))
-        .options(selectinload(User.genres))
+        .options(selectinload(User.genres).selectinload(Genre.games))
     )
     return result.scalars().fetchall()
 

@@ -18,6 +18,7 @@ async def get_backlog(db: AsyncSession, backlog_id: int):
     result = await db.execute(
         select(Backlog)
         .where(Backlog.id == backlog_id)
+        .options(selectinload(Backlog.games))
     )
     return result.scalars().first()
 
