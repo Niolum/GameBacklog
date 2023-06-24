@@ -1,14 +1,14 @@
-from typing import Union
-
 import uvicorn
 from fastapi import FastAPI
 
-from api.views import user_router
+from api.views import user_router, backlog_router
 
 
 app = FastAPI()
 
 app.include_router(user_router)
+app.include_router(backlog_router)
+
 
 
 if __name__ == "__main__":
