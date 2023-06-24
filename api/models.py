@@ -47,7 +47,7 @@ class Backlog(Base):
 class CompleteGame(Base):
     __tablename__ = "completegames"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     games: Mapped[list["Game"]] = relationship(secondary=completegame_game)
 
