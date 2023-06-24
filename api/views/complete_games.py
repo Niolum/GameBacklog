@@ -63,6 +63,11 @@ async def remove_complete_game(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_session)]
 ):
+    if current_user.complete_game is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User has no completegame"
+        )
     await delete_complete_game(db=db, complete_game_id=current_user.complete_game.id)
     data = {"message": "CompleteGame has been deleted successfully"}
     return JSONResponse(content=data, status_code=status.HTTP_200_OK)

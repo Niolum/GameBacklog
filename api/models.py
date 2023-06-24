@@ -30,8 +30,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
     username: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column()
-    backlog: Mapped["Backlog"] = relationship("Backlog", backref="users")
-    complete_game: Mapped["CompleteGame"] = relationship("CompleteGame", backref="users")
+    backlog: Mapped["Backlog"] = relationship("Backlog", backref="users", cascade="all, delete", passive_deletes=True)
+    complete_game: Mapped["CompleteGame"] = relationship("CompleteGame", backref="users", cascade="all, delete", passive_deletes=True)
     games: Mapped[list["Game"] | None] = relationship()
     genres: Mapped[list["Genre"] | None] = relationship()
 
@@ -40,7 +40,7 @@ class Backlog(Base):
     __tablename__ = "backlogs"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     games: Mapped[list["Game"]] = relationship(secondary=backlog_game)
 
 
@@ -48,7 +48,7 @@ class CompleteGame(Base):
     __tablename__ = "completegames"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     games: Mapped[list["Game"]] = relationship(secondary=completegame_game)
 
 
@@ -71,8 +71,7 @@ class Game(Base):
 class Genre(Base):
     __tablename__ = "genres"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
     title: Mapped[str] = mapped_column(nullable=False, unique=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user: Mapped["User"] = relationship(back_populates="genres")
     games: Mapped[list["Game"] | None] = relationship(secondary=game_genre, back_populates="genres")

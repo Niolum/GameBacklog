@@ -64,6 +64,11 @@ async def remove_backlog(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_session)]
 ):
+    if current_user.backlog is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User has no backlog"
+        )
     await delete_backlog(db=db, backlog_id=current_user.backlog.id)
     data = {"message": "Backlog has been deleted successfully"}
     return JSONResponse(content=data, status_code=status.HTTP_200_OK)

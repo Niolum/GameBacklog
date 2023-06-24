@@ -18,6 +18,7 @@ async def get_complete_game(db: AsyncSession, complete_game_id: int):
     result = await db.execute(
         select(CompleteGame)
         .where(CompleteGame.id == complete_game_id)
+        .options(selectinload(CompleteGame.games))
     )
     return result.scalars().first()
 
