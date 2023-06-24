@@ -2,9 +2,10 @@ from datetime import date
 
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.orm import relationship, Mapped, mapped_column, MappedAsDataclass, DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
 
-class Base(MappedAsDataclass, DeclarativeBase):
+class Base(AsyncAttrs, MappedAsDataclass, DeclarativeBase):
     pass
 
 
@@ -29,22 +30,17 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
     username: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column()
-    backlog: Mapped["Backlog"] = relationship(back_populates="user", lazy="selectin")
-    complete_game: Mapped["CompleteGame"] = relationship(back_populates="user", lazy="selectin")
-    games: Mapped[list["Game"] | None] = relationship(lazy="selectin")
-    genres: Mapped[list["Genre"] | None] = relationship(lazy="selectin")
-
-    def __init__(self, username, hashed_password):
-        self.username = username
-        self.hashed_password = hashed_password
+    backlog: Mapped["Backlog"] = relationship("Backlog", backref="users")
+    complete_game: Mapped["CompleteGame"] = relationship("CompleteGame", backref="users")
+    games: Mapped[list["Game"] | None] = relationship()
+    genres: Mapped[list["Genre"] | None] = relationship()
 
 
 class Backlog(Base):
     __tablename__ = "backlogs"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True, init=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user: Mapped["User"] = relationship(back_populates="backlog")
     games: Mapped[list["Game"]] = relationship(secondary=backlog_game)
 
 
@@ -53,7 +49,6 @@ class CompleteGame(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user: Mapped["User"] = relationship(back_populates="complete_game")
     games: Mapped[list["Game"]] = relationship(secondary=completegame_game)
 
 

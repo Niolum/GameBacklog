@@ -60,4 +60,4 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: As
     user = await get_user_by_name(db=db, username=token_data.username)
     if user is None:
         raise credentials_exception
-    return user._asdict()
+    return user

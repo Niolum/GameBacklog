@@ -8,10 +8,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from dotenv import load_dotenv
 
-from api.schemas import Token, User, UserCreate, UserOut
+from api.schemas import Token, User, UserCreate
 from api.database import get_session
 from api.utils import authenticate_user, create_access_token, get_current_user
-from api.crud import get_user_by_name, create_user, get_users, delete_user, get_user_info
+from api.crud import get_user_by_name, create_user, get_users, delete_user
 
 
 load_dotenv()
@@ -55,34 +55,35 @@ async def create_new_user(user: UserCreate, db: AsyncSession = Depends(get_sessi
     new_user = await create_user(db=db, user=user)
     return new_user
 
-@user_router.get("/me", response_model=UserOut)
+@user_router.get("/me", response_model=User)
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_session)]
 ):  
-    user = await get_user_info(db=db, username=current_user["username"])
-    return user._asdict()
+    print(current_user)
+    return current_user
 
-@user_router.get("/", response_model=list[UserOut])
+@user_router.get("/", response_model=list[User])
 async def read_users(
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_session)]
+    db: Annotated[AsyncSession, Depends(get_session)],
+    skip: int = 0,
+    limit: int = 100
 ):
-    return await get_users(db=db)
+    return await get_users(db=db, skip=skip, limit=limit)
 
-@user_router.get("/{username}", response_model=UserOut)
+@user_router.get("/{username}", response_model=User)
 async def read_user(
     username: str,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_session)]
 ):
-    user = await get_user_info(db=db, username=username)
+    user = await get_user_by_name(db=db, username=username)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not Found"
         )
-    user = user._asdict()
     return user
 
 @user_router.delete("/me")
@@ -90,6 +91,6 @@ async def user_delete(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_session)]
 ):
-    await delete_user(db=db, username=current_user["username"])
+    await delete_user(db=db, username=current_user.username)
     data ={"message": "User has been deleted successfully"}
     return JSONResponse(content=data, status_code=status.HTTP_200_OK)

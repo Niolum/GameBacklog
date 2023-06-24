@@ -25,6 +25,9 @@ class GenreUpdate(GenreBase):
 class Genre(GenreBase):
     id: int
 
+    class Config:
+        orm_mode = True
+
 
 class GameBase(BaseModel):
     title: str
@@ -46,10 +49,21 @@ class Game(GameBase):
     id: int
     genres: list[Genre]
 
+    class Config:
+        orm_mode = True
+
+
 
 class Backlog(BaseModel):
     id: int
     user_id: int
+    
+    class Config:
+        orm_mode = True
+
+
+class BacklogCreate(Backlog):
+    pass
 
 
 class BacklogOut(Backlog):
@@ -59,6 +73,9 @@ class BacklogOut(Backlog):
 class CompleteGame(BaseModel):
     id: int
     user_id: int
+
+    class Config:
+        orm_mode = True
 
 
 class CompleteGameOut(CompleteGame):
@@ -83,13 +100,10 @@ class UserUpdate(UserBase):
 
 class User(UserBase):
     id: int | None
+    backlog: Backlog | None
+    complete_game: CompleteGame | None
+    games: list[Game] = []
+    genres: list[Genre] = []
 
     class Config:
-        orm_mode: True
-
-class UserOut(UserBase):
-    id: int
-    blacklog: BacklogOut | None
-    complete_game: CompleteGameOut | None
-    games: list[Game, None] | None
-    genres: list[Genre, None] | None
+        orm_mode = True
