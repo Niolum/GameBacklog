@@ -2,14 +2,13 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.models import Genre
-from api.schemas import GenreCreate
+from api.schemas import GenreCreate, GenreUpdate
 
 
 async def create_genre(db: AsyncSession, genre: GenreCreate):
     new_genre = Genre(
         title=genre.title,
-        user_id=genre.user_id,
-        games=[]
+        user_id=genre.user_id
     )
     db.add(new_genre)
     await db.commit()
@@ -53,3 +52,8 @@ async def is_users_genre(db: AsyncSession, genre_id: int, user_id: int):
         .where(Genre.user_id==user_id)
     )
     return result.scalars().first()
+
+async def update_genre(db: AsyncSession, genre: Genre, new_genre: GenreUpdate):
+    genre.title = new_genre.title
+    await db.commit()
+    return genre

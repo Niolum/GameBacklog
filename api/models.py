@@ -15,13 +15,13 @@ game_genre = Table("game_genre", Base.metadata,
 
 
 backlog_game = Table("backlog_game", Base.metadata, 
-                     Column("backlog_id", ForeignKey("backlogs.id"), primary_key=True), 
-                     Column("game_id", ForeignKey("games.id"), primary_key=True))
+                     Column("backlog_id", ForeignKey("backlogs.id", ondelete="CASCADE"), primary_key=True), 
+                     Column("game_id", ForeignKey("games.id", ondelete="CASCADE"), primary_key=True))
 
 
 completegame_game = Table("completegame_game", Base.metadata, 
-                          Column("complete_game_id", ForeignKey("completegames.id"), primary_key=True),
-                          Column("game_id", ForeignKey("games.id"), primary_key=True))
+                          Column("complete_game_id", ForeignKey("completegames.id", ondelete="CASCADE"), primary_key=True),
+                          Column("game_id", ForeignKey("games.id", ondelete="CASCADE"), primary_key=True))
 
 
 class User(Base):
@@ -63,8 +63,6 @@ class Game(Base):
     image: Mapped[str] = mapped_column(nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     genres: Mapped[list["Genre"]] = relationship(secondary=game_genre)
-    backlogs: Mapped[list["Backlog"] | None] = relationship(secondary=backlog_game, back_populates="games")
-    complete_games: Mapped[list["CompleteGame"] | None] = relationship(secondary=completegame_game, back_populates="games")
 
 
 class Genre(Base):
