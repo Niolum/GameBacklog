@@ -1,8 +1,8 @@
-from sqlalchemy import select, delete, insert
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.models import Backlog, User, Game, backlog_game
+from api.models import Backlog
 
 
 async def create_backlog(db: AsyncSession, user_id: int):

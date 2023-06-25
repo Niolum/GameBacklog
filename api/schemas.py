@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel
 
 
@@ -34,8 +36,10 @@ class GameBase(BaseModel):
     title: str
     developer: str
     publisher: str
-    date_release: str
+    date_release: date
     image: str | None = None
+    user_id: int
+    genres: list[Genre]
 
 
 class GameCreate(GameBase):
@@ -48,7 +52,6 @@ class GameUpdate(GameBase):
 
 class Game(GameBase):
     id: int
-    genres: list[Genre]
 
     class Config:
         orm_mode = True

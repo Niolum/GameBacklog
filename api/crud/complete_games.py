@@ -1,5 +1,5 @@
-from sqlalchemy import select, delete, insert
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.models import CompleteGame

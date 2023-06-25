@@ -60,8 +60,8 @@ async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_session)]
 ):  
-    print(current_user)
-    return current_user
+    user = await get_user_by_name(db=db, username=current_user.username)
+    return user
 
 @user_router.get("/", response_model=list[User])
 async def read_users(
