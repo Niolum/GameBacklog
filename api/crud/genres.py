@@ -1,8 +1,7 @@
-from sqlalchemy import select, delete, insert
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.models import Genre, User, Game
+from api.models import Genre
 from api.schemas import GenreCreate
 
 
@@ -20,7 +19,6 @@ async def get_genre(db: AsyncSession, genre_id: int):
     result = await db.execute(
         select(Genre)
         .where(Genre.id==genre_id)
-        .options(selectinload(Genre.games))
     )
     return result.scalars().first()
 
@@ -37,7 +35,6 @@ async def get_genres(db: AsyncSession, skip: int = 0, limit: int = 100):
         .order_by(Genre.id)
         .offset(skip)
         .limit(limit)
-        .options(selectinload(Genre.games))
     )
     return result.scalars().fetchall()
 

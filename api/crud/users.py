@@ -1,9 +1,9 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload, raiseload
+from sqlalchemy.orm import selectinload
 from passlib.context import CryptContext
 
-from api.models import User, Backlog, Game, CompleteGame, Genre
+from api.models import User, Backlog, Game, CompleteGame
 from api.schemas import UserCreate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -17,8 +17,10 @@ async def get_user_by_name(db: AsyncSession, username: str):
         .where(User.username==username)
         .options(selectinload(User.backlog).selectinload(Backlog.games))
         .options(selectinload(User.complete_game).selectinload(CompleteGame.games))
-        .options(joinedload(User.games))
-        .options(selectinload(User.genres).selectinload(Genre.games))
+        .options(selectinload(User.games).selectinload(Game.genres))
+        .options(selectinload(User.games).selectinload(Game.backlogs))
+        .options(selectinload(User.games).selectinload(Game.complete_games))
+        .options(selectinload(User.genres))
     )
     return result.scalars().first()
 
@@ -44,8 +46,10 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
         .limit(limit)
         .options(selectinload(User.backlog).selectinload(Backlog.games))
         .options(selectinload(User.complete_game).selectinload(CompleteGame.games))
-        .options(selectinload(User.games))
-        .options(selectinload(User.genres).selectinload(Genre.games))
+        .options(selectinload(User.games).selectinload(Game.genres))
+        .options(selectinload(User.games).selectinload(Game.backlogs))
+        .options(selectinload(User.games).selectinload(Game.complete_games))
+        .options(selectinload(User.genres))
     )
     return result.scalars().fetchall()
 
