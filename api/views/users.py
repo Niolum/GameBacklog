@@ -8,10 +8,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from dotenv import load_dotenv
 
-from api.schemas import Token, User, UserCreate
+from api.schemas import Token, User, UserCreate, UserUpdate
 from api.database import get_session
 from api.utils import authenticate_user, create_access_token, get_current_user
-from api.crud import get_user_by_name, create_user, get_users, delete_user
+from api.crud import get_user_by_name, create_user, get_users, delete_user, update_user
 
 
 load_dotenv()
@@ -94,3 +94,18 @@ async def user_delete(
     await delete_user(db=db, username=current_user.username)
     data ={"message": "User has been deleted successfully"}
     return JSONResponse(content=data, status_code=status.HTTP_200_OK)
+
+@user_router.put("/me", response_model=User)
+async def user_change_username(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_session)],
+    user: UserUpdate
+):
+    user_db = await get_user_by_name(db=db, username=user.username)
+    if user_db:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username is already exists"
+        )
+    user = await update_user(db=db, user=current_user, new_user=user)
+    return user

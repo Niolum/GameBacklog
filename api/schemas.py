@@ -46,8 +46,11 @@ class GameCreate(GameBase):
     pass
 
 
-class GameUpdate(GameBase):
-    pass
+class GameUpdate(BaseModel):
+    title: str
+    developer: str
+    publisher: str
+    date_release: date
 
 
 class Game(GameBase):

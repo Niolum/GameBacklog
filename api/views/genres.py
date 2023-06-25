@@ -4,8 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.schemas import GenreCreate, User, Genre
-from api.crud import create_genre, get_genre, get_genres, delete_genre, get_genre_by_title, is_users_genre
+from api.schemas import GenreCreate, User, Genre, GenreUpdate
+from api.crud import (
+    create_genre, 
+    get_genre, 
+    get_genres, 
+    delete_genre, 
+    get_genre_by_title, 
+    is_users_genre,
+    update_genre
+)
 from api.utils import get_current_user, get_session
 
 
@@ -80,3 +88,25 @@ async def remove_genre(
     await delete_genre(db=db, genre_id=genre_id)
     data = {"message": "Genre has been deleted successfully"}
     return JSONResponse(content=data, status_code=status.HTTP_200_OK)
+
+@genre_router.put("/{genre_id}", response_model=Genre)
+async def change_title_for_genre(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_session)],
+    genre_id: int,
+    genre: GenreUpdate
+):
+    db_genre = await get_genre(db=db, genre_id=genre_id)
+    if db_genre is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Genre not Found"
+        )
+    db_genre = await is_users_genre(db=db, genre_id=genre_id, user_id=current_user.id)
+    if db_genre is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Genre does not belong to this user"
+        )
+    new_genre = await update_genre(db=db, genre=db_genre, new_genre=genre)
+    return new_genre
