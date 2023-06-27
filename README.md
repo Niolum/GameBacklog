@@ -1,3 +1,4 @@
+# GameBacklog
 ## Features
 
 - **[FastAPI](https://fastapi.tiangolo.com/)** (Python 3.11)
