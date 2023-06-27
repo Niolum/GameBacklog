@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backlogdb:
+    image: postgres:14
+    container_name: postgres-backlog
+    env_file:
+      - ./.env
+    volumes:
+      - backlog_db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  web:
+    build: .
+    container_name: web-backlog
+    command: >
+      /bin/sh -c "alembic upgrade head
+      && uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 8000"
+    ports:
+      - 8000:8000
+
+  
+volumes:
+  backlog_db:
+    external: True
